@@ -1,10 +1,8 @@
-# LILA BLACK · Player Journeys  
-  
-URL - [https://lilablack-mu.vercel.app/](https://lilablack-mu.vercel.app/)
+# LILA BLACK · Player Journeys
 
 A browser tool for Level Designers to see how players actually move through LILA BLACK maps: their paths, where fights happen, where people die (to bots, to other players, to the storm), where they loot, and which parts of the map nobody uses.
 
-**Live:** *add your Vercel URL here*
+**Live:** [https://lilablack-mu.vercel.app/](https://lilablack-mu.vercel.app/)
 
 ## What it does
 
