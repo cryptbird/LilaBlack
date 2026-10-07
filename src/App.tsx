@@ -7,6 +7,7 @@ import { shouldAutoStartTour, Tour, TOUR_STEPS } from './components/Tour'
 import { HEAT_LAYERS, MAPS, MOVEMENT_EVENTS, type EventType } from './config'
 import { loadBundledDataset, loadZipDataset, type Progress } from './data/load'
 import type { Dataset, Journey } from './data/model'
+import { useFullscreen } from './lib/fullscreen'
 import { HeatGrid, renderHeat } from './lib/heatmap'
 import { readHash, writeHash, type ViewState } from './lib/urlState'
 
@@ -161,6 +162,8 @@ function Explorer({ data, onUpload }: { data: Dataset; onUpload: (f: File) => vo
   const [hidden, setHidden] = useState<Set<string>>(new Set())
   const [highlight, setHighlight] = useState<string | null>(null)
   const [tourOpen, setTourOpen] = useState(shouldAutoStartTour)
+  const stageRef = useRef<HTMLElement>(null)
+  const { isFullscreen, toggle: toggleFullscreen, exit: exitFullscreen } = useFullscreen(stageRef)
 
   const matchCountByMap = useMemo(() => {
     const c: Record<string, number> = {}
@@ -217,7 +220,7 @@ function Explorer({ data, onUpload }: { data: Dataset; onUpload: (f: File) => vo
     return () => cancelAnimationFrame(raf)
   }, [playing, maxTime])
 
-  // Keyboard: space = play/pause, esc = back to all matches
+  // Keyboard: space = play/pause, esc = leave fullscreen, then back to all matches
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return
@@ -227,11 +230,14 @@ function Explorer({ data, onUpload }: { data: Dataset; onUpload: (f: File) => vo
           if (!p && time >= maxTime) setTime(0)
           return !p
         })
-      } else if (e.code === 'Escape') setView({ match: null })
+      } else if (e.code === 'Escape') {
+        if (isFullscreen) exitFullscreen()
+        else setView({ match: null })
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [time, maxTime, setView])
+  }, [time, maxTime, setView, isFullscreen, exitFullscreen])
 
   // Heatmap follows the same filters and the timeline.
   const heat = useMemo(() => {
@@ -293,7 +299,7 @@ function Explorer({ data, onUpload }: { data: Dataset; onUpload: (f: File) => vo
         setHeatOpacity={setHeatOpacity}
         heatCount={heat.count}
       />
-      <main className="stage">
+      <main className={isFullscreen ? 'stage fullscreen' : 'stage'} ref={stageRef}>
         <MapCanvas
           mapId={view.map}
           journeys={journeys}
@@ -306,6 +312,8 @@ function Explorer({ data, onUpload }: { data: Dataset; onUpload: (f: File) => vo
           heatOpacity={heatOpacity}
           highlightKey={highlight}
           onPickMatch={(id) => setView({ match: id })}
+          fullscreen={isFullscreen}
+          onToggleFullscreen={toggleFullscreen}
         />
         {journeys.length === 0 && <div className="empty">Nothing to show — try enabling humans/bots or selecting more dates.</div>}
         <Timeline

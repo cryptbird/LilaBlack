@@ -22,7 +22,7 @@ A browser tool for Level Designers to see how players actually move through LILA
 | First-run tour                   | Short walkthrough of every control, with Skip/Next. Replay it from the **?** button                      |
 
 
-Keyboard: `space` play/pause · `esc` back to all matches · scroll to zoom · drag to pan · double-click to reset the view.
+Keyboard: `space` play/pause · `esc` exit fullscreen, then back to all matches · scroll to zoom · drag to pan · double-click (or ⟲) to reset the view · the corner-arrows button toggles a fullscreen map + timeline.
 
 ## Tech stack
 

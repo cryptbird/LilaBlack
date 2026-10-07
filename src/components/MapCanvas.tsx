@@ -22,6 +22,8 @@ interface Props {
   heatOpacity: number
   highlightKey: string | null
   onPickMatch: (matchId: string) => void
+  fullscreen: boolean
+  onToggleFullscreen: () => void
 }
 
 interface Hit {
@@ -193,9 +195,15 @@ export function MapCanvas(props: Props) {
       canvas.height = Math.round(height * dpr)
       canvas.style.width = `${width}px`
       canvas.style.height = `${height}px`
+      const prev = sizeRef.current
       sizeRef.current = { w: width, h: height }
       if (!userMovedRef.current) fit()
-      else draw()
+      else {
+        // Keep whatever was in the middle in the middle (e.g. entering fullscreen while zoomed in).
+        const v = viewRef.current
+        viewRef.current = { ...v, ox: v.ox + (width - prev.w) / 2, oy: v.oy + (height - prev.h) / 2 }
+        draw()
+      }
     })
     ro.observe(wrap)
     return () => ro.disconnect()
@@ -319,7 +327,17 @@ export function MapCanvas(props: Props) {
       <div className="zoom-controls">
         <button onClick={() => zoomCenter(1.4)} title="Zoom in">+</button>
         <button onClick={() => zoomCenter(1 / 1.4)} title="Zoom out">−</button>
-        <button onClick={fit} title="Reset view (or double-click map)">⤢</button>
+        <button onClick={fit} title="Reset view (or double-click map)" aria-label="Reset view">
+          <Icon d={ICON_RESET} />
+        </button>
+        <button
+          onClick={props.onToggleFullscreen}
+          title={props.fullscreen ? 'Exit fullscreen (esc)' : 'Fullscreen'}
+          aria-label={props.fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          aria-pressed={props.fullscreen}
+        >
+          <Icon d={props.fullscreen ? ICON_COLLAPSE : ICON_EXPAND} />
+        </button>
       </div>
       {cursorWorld && (
         <div className="coord-readout">
@@ -328,6 +346,18 @@ export function MapCanvas(props: Props) {
       )}
       {hover && <Tooltip hit={hover.hit} x={hover.x} y={hover.y} single={props.single} />}
     </div>
+  )
+}
+
+const ICON_RESET = 'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8 M3 3v5h5'
+const ICON_EXPAND = 'M8 3H5a2 2 0 0 0-2 2v3 M21 8V5a2 2 0 0 0-2-2h-3 M3 16v3a2 2 0 0 0 2 2h3 M16 21h3a2 2 0 0 0 2-2v-3'
+const ICON_COLLAPSE = 'M8 3v3a2 2 0 0 1-2 2H3 M21 8h-3a2 2 0 0 1-2-2V3 M3 16h3a2 2 0 0 1 2 2v3 M16 21v-3a2 2 0 0 1 2-2h3'
+
+function Icon({ d }: { d: string }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d={d} />
+    </svg>
   )
 }
 

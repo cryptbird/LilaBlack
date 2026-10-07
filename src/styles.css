@@ -364,6 +364,17 @@ select.speed {
   min-height: 0;
   position: relative;
 }
+/* Native fullscreen sizes this itself; on iPhone (no Fullscreen API) it's a viewport overlay. */
+.stage.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: var(--bg);
+}
+html:has(.stage.fullscreen),
+html:has(.stage.fullscreen) body {
+  overflow: hidden;
+}
 .map-wrap {
   flex: 1;
   position: relative;
@@ -405,6 +416,8 @@ select.speed {
 .zoom-controls button {
   width: 30px;
   height: 30px;
+  display: grid;
+  place-items: center;
   border-radius: 6px;
   background: rgba(16, 20, 27, 0.9);
   border: 1px solid var(--line);
