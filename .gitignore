@@ -1,0 +1,5 @@
+node_modules
+dist
+.DS_Store
+# generated from player_data/ by scripts/prepare-data.mjs
+public/data
